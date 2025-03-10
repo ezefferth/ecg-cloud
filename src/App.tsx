@@ -1,10 +1,12 @@
-
+import AuthProvider from "./components/data/context/authContext";
 import Routers from "./components/routes";
 
 function App() {
   return (
     <>
-      <Routers />
+      <AuthProvider>
+        <Routers />
+      </AuthProvider>
     </>
   );
 }

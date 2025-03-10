@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Home from "../../pages/home";
 import Login from "../../pages/login";
+import PrivateRoute from "./privateRoutes";
 
 export default function Routers() {
   return (
@@ -8,7 +9,11 @@ export default function Routers() {
       <Routes>
         <Route
           path="/"
-          element={<Home />}
+          element={
+            <PrivateRoute>
+              <Home />
+            </PrivateRoute>
+          }
         />
         <Route
           path="/login"

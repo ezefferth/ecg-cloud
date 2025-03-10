@@ -2,8 +2,15 @@ import colors from "../../components/types/colors";
 import TextField from "@mui/material/TextField";
 import imgLogin from "../../../src/assets/login.png";
 import { useNavigate } from "react-router-dom";
+import { useContext, useState } from "react";
+import { AuthContext } from "../../components/data/context/authContext";
 export default function Login() {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
+
+  const {Login} = useContext(AuthContext)
+
+  const [email, setEmail] = useState<string>("");
+  const [senha, setSenha] = useState<string>("");
 
   return (
     <div className="flex h-screen w-screen justify-center items-center">
@@ -32,6 +39,7 @@ export default function Login() {
                 variant="standard"
                 type="email"
                 fullWidth
+                onChange={(e) => setEmail(e.target.value)}
               />
               <div className="mt-4">
                 <TextField
@@ -40,21 +48,24 @@ export default function Login() {
                   variant="standard"
                   type="password"
                   fullWidth
+                  onChange={(e) => setSenha(e.target.value)}
+
                 />
               </div>
             </div>
           </div>
           <div className="mt-4 mx-12">
             <button
-              className="px-4 py-1 w-full transition-all"
-              onClick={() => navigate("/")}
+              className="px-4 py-1 w-full transition-all bg-blue-900 hover:bg-blue-950"
+              onClick={() => Login(email, senha)}
             >
               Entrar
             </button>
           </div>
           <div className="mx-12 mt-4">
             <p>
-              Esqueceu a senha? <a className="cursor-pointer">Recuperar senha.</a>
+              Esqueceu a senha?{" "}
+              <a className="cursor-pointer">Recuperar senha.</a>
             </p>
           </div>
         </div>

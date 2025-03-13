@@ -10,14 +10,16 @@ import { useContext, useEffect, useState } from "react";
 import { FaPlus } from "react-icons/fa6";
 import { AuthContext } from "../../components/data/context/authContext";
 import { estados } from "../../components/cidadesPorEstado";
-
-// https://www.figma.com/design/94HFbu4ZKVzAxu1KJCFKfr/Registration-flow-(Community)?node-id=434-304&p=f&t=IwXUYXWcuBRTfZei-0
+import { DataContext } from "../../components/data/context/dataContext";
+// import { CriarEndereco } from "../../components/data/fetchs/endereco";
 
 export default function ConfigUser() {
-  const { user } = useContext(AuthContext);
+  const { usuario } = useContext(AuthContext);
+  const { instituicoes } = useContext(DataContext);
 
   const [email, setEmail] = useState<string>("");
   const [nome, setNome] = useState<string>("");
+  const [sobreNome, setSobreNome] = useState<string>("");
   const [phone, setPhone] = useState<string>("");
   const [tipoLogradouro, setTipoLogradouro] = useState<string>("");
   const [logradouro, setLogradouro] = useState<string>("");
@@ -27,6 +29,7 @@ export default function ConfigUser() {
   const [cidade, setCidade] = useState<string>("");
   const [estado, setEstado] = useState<string>("");
   const [cidades, setCidades] = useState<string[]>([]);
+  const [instituicao, setInstituicao] = useState<string>("");
 
   function formatCepNumber(cep: string): string {
     // Remove todos os caracteres não numéricos
@@ -93,6 +96,26 @@ export default function ConfigUser() {
     setCidade(""); // Resetar cidade ao mudar de estado
   }, [estado]);
 
+  useEffect(() => {
+    if (usuario) {
+      setNome(usuario.nome);
+      setSobreNome(usuario.sobreNome);
+      setEmail(usuario.email);
+      setPhone(formatPhoneNumber(usuario.contato[0]));
+      instituicoes?.map((item) => {
+        if (usuario.instituicaoId === item.id) {
+          setInstituicao(item.nome);
+        }
+      });
+    }
+  }, []);
+  
+
+  const handleAttDados = async () => {
+    const tipo = "usuario";
+    const fkId = usuario!.id;
+    
+  };
   return (
     <div>
       {/* Clínica Escola Integrada */}
@@ -115,18 +138,27 @@ export default function ConfigUser() {
             onChange={(e) => setNome(e.target.value)}
           />
           <TextField
+            label="Nome"
+            type="name"
+            value={sobreNome}
+            variant="standard"
+            sx={{ width: "15rem" }}
+            size="small"
+            onChange={(e) => setSobreNome(e.target.value)}
+          />
+        </div>
+        <div className="flex justify-center gap-8 mt-4">
+          <TextField
             label="Email"
             type="email"
             disabled
-            value={user?.email}
+            value={email}
             variant="standard"
-            defaultValue={user?.email}
+            // defaultValue={user?.email}
             sx={{ width: "15rem" }}
             size="small"
             onChange={(e) => setEmail(e.target.value)}
           />
-        </div>
-        <div className="flex justify-center gap-8 mt-4">
           <TextField
             label="Contato"
             type="phone"
@@ -136,6 +168,8 @@ export default function ConfigUser() {
             value={phone}
             onChange={handleChangeFormated}
           />
+        </div>
+        <div className="flex justify-center gap-8 mt-4">
           <FormControl
             variant="standard"
             sx={{ width: "15rem" }}
@@ -155,8 +189,6 @@ export default function ConfigUser() {
               <MenuItem value="Rua">Rua</MenuItem>
             </Select>
           </FormControl>
-        </div>
-        <div className="flex justify-center gap-8 mt-4">
           <TextField
             label="Logradouro"
             type="text"
@@ -168,6 +200,8 @@ export default function ConfigUser() {
             value={logradouro}
             onChange={(e) => setLogradouro(e.target.value)}
           />
+        </div>
+        <div className="flex justify-center gap-8 mt-4">
           <TextField
             label="Número"
             type="number"
@@ -177,8 +211,6 @@ export default function ConfigUser() {
             value={numero}
             onChange={(e) => setNumero(e.target.value)}
           />
-        </div>
-        <div className="flex justify-center gap-8 mt-4">
           <TextField
             label="Bairro"
             type="text"
@@ -190,6 +222,9 @@ export default function ConfigUser() {
             value={bairro}
             onChange={(e) => setBairro(e.target.value)}
           />
+        </div>
+
+        <div className="flex justify-center gap-8 mt-4">
           <TextField
             label="Cep"
             type="text"
@@ -201,9 +236,6 @@ export default function ConfigUser() {
             value={cep}
             onChange={handleChangeFormatedCep}
           />
-        </div>
-
-        <div className="flex justify-center gap-8 mt-4">
           <FormControl
             variant="standard"
             sx={{ width: "15rem" }}
@@ -230,6 +262,9 @@ export default function ConfigUser() {
               ))}
             </Select>
           </FormControl>
+        </div>
+
+        <div className="flex justify-center gap-8 mt-4">
           <FormControl
             variant="standard"
             sx={{ width: "15rem" }}
@@ -258,18 +293,25 @@ export default function ConfigUser() {
               ))}
             </Select>
           </FormControl>
-        </div>
-        <div>
-          <button>
-            <FaPlus />
-          </button>
+          <TextField
+            label="Instituição"
+            type="text"
+            // disabled
+            variant="standard"
+            // defaultValue={user?.email}
+            sx={{ width: "15rem" }}
+            size="small"
+            disabled={true}
+            value={instituicao}
+            // onChange={(e) => setBairro(e.target.value)}
+          />
         </div>
 
-        <div className="flex justify-center gap-2 ">
+        <div className="flex justify-center gap-2 mt-4 ">
           <button className="bg-slate-500 px-4 hover:bg-slate-400">
             Cancelar
           </button>
-          <button className="bg-slate-600 px-4 hover:bg-slate-500">
+          <button className="bg-slate-600 px-4 hover:bg-slate-500" onClick={handleAttDados}>
             Salvar
           </button>
         </div>
@@ -277,17 +319,3 @@ export default function ConfigUser() {
     </div>
   );
 }
-
-export type Endereco = {
-  id: string;
-  tipoLogradouro: string;
-  logradouro: string;
-  numero: string;
-  bairro: string;
-  cep: string;
-  cidade: string;
-  estado: string;
-  pais: string;
-  createdAt: string;
-  updatedAt: string;
-};

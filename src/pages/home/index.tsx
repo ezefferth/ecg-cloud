@@ -126,7 +126,7 @@ export default function Home() {
         <div className="flex justify-center mt-auto w-full">
           <button
             onClick={Logout}
-            className="text-slate-100 hover:text-white px-3 rounded-lg transition-all hover:outline hover:transition-all bg-slate-700"
+            className="text-slate-100 hover:text-white px-3 rounded-lg transition-all hover:outline hover:transition-all"
           >
             Sair
           </button>

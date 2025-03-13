@@ -2,14 +2,6 @@ export type Instituicao = {
   id: string;
   nome: string;
   responsavel: string;
-  enderecoId?: string;
-  endereco?: Endereco;
-  createdAt: string;
-  updatedAt: string;
-};
-
-export type Endereco = {
-  id: string;
   tipoLogradouro: string;
   logradouro: string;
   numero: string;
@@ -22,16 +14,38 @@ export type Endereco = {
   updatedAt: string;
 };
 
+// export type Endereco = {
+//   id: string;
+//   tipoLogradouro: string;
+//   logradouro: string;
+//   numero: string;
+//   bairro: string;
+//   cep: string;
+//   cidade: string;
+//   estado: string;
+//   pais: string;
+//   createdAt: string;
+//   updatedAt: string;
+// };
+
 // (067) 3345-7967 /  Cidade Universitária, Caixa Postal 549. CEP 79070-900. Campo Grande - MS
 
 export type Usuario = {
   id: string;
   nome: string;
+  sobreNome: string;
+  senha: string;
   email: string;
   contato: string[];
-  instituicao: Instituicao;
+  tipoLogradouro: string;
+  logradouro: string;
+  numero: string;
+  bairro: string;
+  cep: string;
+  cidade: string;
+  estado: string;
+  pais: string;
   instituicaoId: string;
-  enderecoId?: string;
   admin: boolean;
   createdAt: string;
   updatedAt: string;
@@ -47,7 +61,14 @@ export type Paciente = {
   historicoMedico?: string;
   observacoes?: string;
   instituicaoId: string;
-  enderecoId?: string;
+  tipoLogradouro: string;
+  logradouro: string;
+  numero: string;
+  bairro: string;
+  cep: string;
+  cidade: string;
+  estado: string;
+  pais: string;
   ecg: Ecg[];
   createdAt: string;
   updatedAt: string;

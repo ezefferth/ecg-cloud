@@ -8,14 +8,14 @@ interface PrivateRouteProps {
 }
 
 function PrivateRoute({ children }: PrivateRouteProps) {
-  const { user, loading } = useContext(AuthContext);
+  const { usuario, loading } = useContext(AuthContext);
 
   if (loading) {
     // Exibe um spinner ou tela de carregamento enquanto verifica a autenticação
     return <Carregando />;
   }
 
-  if (!user) {
+  if (!usuario) {
     // Redireciona para a página de login se o usuário não estiver autenticado
     return <Navigate to="/login" />;
   }

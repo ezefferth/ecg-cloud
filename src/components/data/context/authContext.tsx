@@ -1,20 +1,13 @@
 import { createContext, useEffect, useState } from "react";
-import {
-  getAuth,
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  signOut,
-} from "firebase/auth";
+import axios from "axios";
 import { Usuario } from "../../types/types";
-import { Firebase } from "../../firebase";
+
 import { useNavigate } from "react-router-dom";
 
-type User = {
-  displayName: string;
-  email: string;
-  photoURL: string;
-  uid: string;
-};
+interface UsuarioResponse {
+  usuario: Usuario;
+  token?: string;
+}
 
 type AuthContextType = {
   usuario?: Usuario;
@@ -22,9 +15,8 @@ type AuthContextType = {
   setUsuario: (value: Usuario | undefined) => void;
   setToken: (value: string | undefined) => void;
   loading: boolean;
-  user: User | null;
-  Login: (email: string, senha: string) => Promise<void>;
-  Logout: () => Promise<void>;
+  Logout: () => void;
+  Login: (nomeUsuario: string, senha: string) => Promise<void>;
 };
 
 export const AuthContext = createContext({} as AuthContextType);
@@ -33,59 +25,101 @@ export default function AuthProvider({ children }: any) {
   const [usuario, setUsuario] = useState<Usuario | undefined>();
   const [token, setToken] = useState<string | undefined>();
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<User | null>(null);
+  // const [user, setUser] = useState<User | null>(null);
 
-  const auth = getAuth(Firebase);
+  // const auth = getAuth(Firebase);
   const navigate = useNavigate();
 
-  async function Login(email: string, senha: string) {
-    setLoading(true); // Ativa o loading ao iniciar login
+  axios.defaults.baseURL = "http://localhost:3000";
+
+  const axiosInstance = axios.create({
+    baseURL: "http://localhost:3000",
+    withCredentials: true,
+  });
+
+  const Login = async (nomeUsuario: string, senha: string) => {
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, senha);
-      const user = userCredential.user;
-      setUser({
-        displayName: user.displayName ?? "",
-        email: user.email ?? "",
-        photoURL: user.photoURL ?? "",
-        uid: user.uid,
-      });
+      const response = await axios.post<UsuarioResponse>(
+        "http://localhost:3000/usuario/login",
+        {
+          nomeUsuario,
+          senha,
+        }
+      );
+      if (response.status < 200 || response.status >= 300) {
+        throw new Error("Erro de login");
+      }
+      const { usuario, token } = response.data;
+      // 🔹 Salvar o token no LocalStorage
+      if (token) {
+        localStorage.setItem("authToken", token);
+      }
+      setUsuario(usuario);
       navigate("/");
     } catch (error) {
       console.error("Erro ao fazer login:", error);
-    } finally {
-      setLoading(false); // Finaliza o loading após tentativa de login
+      throw error;
     }
-  }
+  };
 
-  async function Logout() {
-    setLoading(true); // Ativa o loading ao iniciar logout
+  const Logout = async () => {
     try {
-      await signOut(auth);
-      setUser(null);
+      // Faz uma requisição ao backend para limpar a sessão, se necessário
+      await axios.post("/usuario/logout", {}, { withCredentials: true });
+
+      // 🔹 Removendo o token do LocalStorage
+      localStorage.removeItem("authToken");
+
+      setUsuario(undefined);
+      navigate("/login");
     } catch (error) {
       console.error("Erro ao fazer logout:", error);
-    } finally {
-      setLoading(false); // Finaliza o loading após logout
     }
-  }
+  };
 
   useEffect(() => {
-    setLoading(true); // Ativa o loading ao verificar autenticação
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setUser({
-          displayName: user.displayName ?? "",
-          email: user.email ?? "",
-          photoURL: user.photoURL ?? "",
-          uid: user.uid,
-        });
-      } else {
-        setUser(null);
+    axiosInstance.interceptors.request.use((config) => {
+      const token = localStorage.getItem("authToken");
+      if (token) {
+        config.headers = config.headers || {}; // Garante que headers está definido
+        config.headers.Authorization = `Bearer ${token}`;
       }
-      setLoading(false); // Finaliza o loading após verificação
+      return config;
     });
 
-    return unsubscribe;
+    const verificarLogin = async () => {
+      const token = localStorage.getItem("authToken");
+
+      if (!token) {
+        console.warn("Nenhum token encontrado, redirecionando para login.");
+        setLoading(false);
+        navigate("/login");
+        return;
+      }
+
+      try {
+        const response = await axiosInstance.get<UsuarioResponse>(
+          "/usuario/verificaLogin",
+          {
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+
+        if (response.status === 200) {
+          const data = response.data;
+          setUsuario(data.usuario);
+        }
+      } catch (error) {
+        console.error("Usuário não autenticado:", error);
+        localStorage.removeItem("authToken"); // Remove token inválido
+        setUsuario(undefined);
+        navigate("/login");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    verificarLogin();
   }, []);
 
   return (
@@ -96,7 +130,7 @@ export default function AuthProvider({ children }: any) {
         setUsuario,
         setToken,
         loading,
-        user,
+        // user,
         Login,
         Logout,
       }}
